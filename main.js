@@ -81,7 +81,7 @@ var BiggerInt = (function() {
     BiggerInt.prototype.accumulate = function(x) {
         if (typeof x === "number") {
             this.remainder += x%this.divisor;
-            this.quotient += Math.floor(x/this.divisor);
+            this.quotient += Math.trunc(x/this.divisor);
             if (this.remainder >= this.divisor) {
                 this.remainder -= this.divisor;
                 this.quotient++;
@@ -89,7 +89,7 @@ var BiggerInt = (function() {
                 this.remainder += this.divisor;
                 this.quotient--;
             }
-        } else { // Bigger int
+        } else { // BiggerInt
             // take note of case with different remainderBit
             return "Not yet implemented";
         }
@@ -138,16 +138,16 @@ var getDoubleBits = function(x) {
         } else if (x === 0) {
             // -0 can be differentiated from 0 by this method
             return 1/x === Infinity?"0".repeat(64):"1"+"0".repeat(63);
-        } else if (abs(x) < Math.pow(2, -1022)) { // denormal numbers
+        } else if (Math.abs(x) < Math.pow(2, -1022)) { // denormal numbers
             x *= Math.pow(2, 1000);
             x *= Math.pow(2, 74); // make sure there is no overflow
-            x = ("0".repeat(52)+abs(x).toString(2)).slice(-52);
+            x = ("0".repeat(52)+Math.abs(x).toString(2)).slice(-52);
             return sign+"0".repeat(11)+x;
         }
         var exponent = 1023; // exponent is offset by 1023
-        x = abs(x); // now that sign is handled, remove sign
+        x = Math.abs(x); // now that sign is handled, remove sign
         // shift the number carefully (can be slightly optimised)
-        var l = min(Math.round(Math.log2(abs(x))), 1023);
+        var l = Math.min(Math.round(Math.log2(Math.abs(x))), 1023);
         exponent += l;
         x /= Math.pow(2, l);
         while (x >= 2) {
@@ -167,13 +167,13 @@ var getDoubleBits = function(x) {
         return sign+exponent+x; // combine results
     };
     var getExponent = function(x) {
-        if (abs(x) < Math.pow(2, -1022)) {
+        if (Math.abs(x) < Math.pow(2, -1022)) {
             return 0;
         }
         var exponent = 1023; // exponent is offset by 1023
-        x = abs(x); // now that sign is handled, remove sign
+        x = Math.abs(x); // now that sign is handled, remove sign
         // shift the number carefully (can be slightly optimised)
-        var l = min(Math.round(Math.log2(abs(x))), 1023);
+        var l = Math.min(Math.round(Math.log2(Math.abs(x))), 1023);
         exponent += l;
         x /= Math.pow(2, l);
         while (x >= 2) {
@@ -319,7 +319,6 @@ var getDoubleBits = function(x) {
                     mantissa = ("0".repeat(1-exponent))+mantissa;
                     exponent = 1;
                 }
-                //println(sign + ("0".repeat(11) + exponent.toString(2)).slice(-11) + mantissa.slice(1, 53));
                 var num;
                 if (mantissa[0] === "0") { // denormal
                     num = getNumber(sign + "0".repeat(11) + mantissa.slice(1, 53));
@@ -429,7 +428,7 @@ var getDoubleBits = function(x) {
         var sum = arguments[0], c = 0;
         for (var i=1;i<arguments.length;i++) {
             var t = sum + arguments[i];
-            if (abs(sum)>abs(arguments[i])) {
+            if (Math.abs(sum)>Math.abs(arguments[i])) {
                 c += (sum - t) + arguments[i];
             } else {
                 c += (arguments[i] - t) + sum;
